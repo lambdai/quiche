@@ -158,6 +158,21 @@ bool HttpDecoder::ReadFrameType(QuicDataReader* reader) {
     }
     // The reader has all type data needed, so no need to buffer.
     bool success = reader->ReadVarInt62(&current_frame_type_);
+    if (success) {
+      auto h2_frame_type_to_string = [](http2::Http2FrameType t) {
+        switch (t) {
+        case http2::Http2FrameType::DATA:
+          return "DATA";
+        case http2::Http2FrameType::HEADERS:
+          return "HEADERS";
+        case http2::Http2FrameType::RST_STREAM:
+          return "RST_STREAM";
+        default:
+          return absl::StrCat(static_cast<int>(t));
+        }
+      };
+      QUICHE_DLOG(INFO) << "reading frame_type " << h2_frame_type_to_string(current_frame_type_);
+    }
     QUICHE_DCHECK(success);
   } else {
     // Buffer the existing type field.
